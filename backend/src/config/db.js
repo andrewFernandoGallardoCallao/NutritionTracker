@@ -1,3 +1,4 @@
+/* Database configuration using MySQL (commented out) */
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 
@@ -11,6 +12,10 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  port: process.env.DB_PORT || 3306,
 });
 
 export default pool;
+
+
+

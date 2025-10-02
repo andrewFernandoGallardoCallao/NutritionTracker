@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 
+      
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
