@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // ← AÑADE ESTO
 
 interface UserData {
   id: number;
@@ -45,6 +46,7 @@ const Dashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // ← INICIALIZA navigate
 
   useEffect(() => {
     loadDashboardData();
@@ -178,7 +180,7 @@ const Dashboard: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login'); // ← CAMBIA ESTA LÍNEA
   };
 
   if (loading) {
@@ -233,136 +235,10 @@ const Dashboard: React.FC = () => {
       </header>
       
       <main className="max-w-7xl mx-auto py-8 px-4">
-        {/* Resumen Principal */}
+        {/* Resto de tu código del dashboard... */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Información del Usuario */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">👤 Tu Perfil</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Nombre:</span>
-                <span className="font-semibold">{user.name} {user.last_name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Edad:</span>
-                <span className="font-semibold">{age} años</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Género:</span>
-                <span className="font-semibold">
-                  {user.gender === 'M' ? 'Hombre' : user.gender === 'F' ? 'Mujer' : 'Otro'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Actividad:</span>
-                <span className="font-semibold">{getActivityLevelText(user.activity_level)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Objetivo:</span>
-                <span className="font-semibold">{getObjectiveText(user.objective)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Medidas Corporales */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">📏 Medidas Corporales</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Peso actual:</span>
-                <span className="font-semibold">{user.weight} kg</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Altura:</span>
-                <span className="font-semibold">{user.height} cm</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">IMC:</span>
-                <span className="font-semibold">{bmi} ({bmiCategory})</span>
-              </div>
-              {weightHistory.length > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Último registro:</span>
-                  <span className="font-semibold">
-                    {weightHistory[weightHistory.length - 1].weight} kg
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Objetivos Diarios */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">🎯 Objetivos Diarios</h2>
-            {nutritionalRequirements ? (
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600">Calorías</span>
-                    <span className="font-semibold">
-                      {Math.round(todayConsumption.calories)} / {nutritionalRequirements.daily_calories} kcal
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.calories, nutritionalRequirements.daily_calories)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600">Proteína</span>
-                    <span className="font-semibold">
-                      {Math.round(todayConsumption.protein)} / {nutritionalRequirements.protein_grams} g
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.protein, nutritionalRequirements.protein_grams)}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600">Grasas</span>
-                    <span className="font-semibold">
-                      {Math.round(todayConsumption.fat)} / {nutritionalRequirements.fat_grams} g
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.fat, nutritionalRequirements.fat_grams)}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600">Carbohidratos</span>
-                    <span className="font-semibold">
-                      {Math.round(todayConsumption.carbs)} / {nutritionalRequirements.carbs_grams} g
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-orange-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.carbs, nutritionalRequirements.carbs_grams)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-500">No se encontraron objetivos nutricionales</p>
-            )}
-          </div>
+          {/* ... tu contenido existente ... */}
         </div>
-
-        {/* Resto del código del dashboard... */}
       </main>
     </div>
   );
