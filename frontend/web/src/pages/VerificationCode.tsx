@@ -62,7 +62,7 @@ const VerificationCode: React.FC<VerificationCodeProps> = ({
     setError('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/verify-2fa', {
+      const response = await fetch('https://nutritiontracker-1-c7sh.onrender.com/api/auth/verify-2fa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ const VerificationCode: React.FC<VerificationCodeProps> = ({
     setError('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/resend-2fa', {
+      const response = await fetch('https://nutritiontracker-1-c7sh.onrender.com/api/auth/resend-2fa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

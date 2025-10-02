@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
       }
 
       // Cargar perfil completo
-      const profileResponse = await fetch(`http://localhost:4000/api/auth/profile/${storedUser.id}`, {
+      const profileResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/profile/${storedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:4000/api";
+const API_URL = "https://nutritiontracker-frontend.onrender.com/api";
 
 export const api = {
   async request(endpoint: string, options: RequestInit = {}) {
