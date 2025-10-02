@@ -4,7 +4,16 @@ import cors from "cors";
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',                    // Desarrollo local
+    'https://nutritiontracker-frontend.onrender.com',  // Producción
+    'http://localhost:5173'                    // Vite dev server
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Middleware de logging personalizado (reemplazo simple para Morgan)
