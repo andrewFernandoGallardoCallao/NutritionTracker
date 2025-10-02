@@ -11,112 +11,70 @@ import { sendVerificationEmail } from "../services/sendEmailService.js";
 
 // Almacenar códigos 2FA por usuario
 const twoFACodes = new Map();
-
 export const register = async (req, res) => {
   const connection = await pool.getConnection();
 
+  console.log('🔔 REGISTER endpoint llamado');
+
   try {
     const {
-      name,
-      last_name,
-      email,
-      password,
-      weight,
-      height,
-      gender,
-      birthdate,
-      activity_level,
-      objective,
+      name, last_name, email, password, weight, height, 
+      gender, birthdate, activity_level, objective
     } = req.body;
 
-    // Validación de campos
-    if (
-      !name ||
-      !last_name ||
-      !email ||
-      !password ||
-      !weight ||
-      !height ||
-      !gender ||
-      !birthdate ||
-      !activity_level ||
-      !objective
-    ) {
+    // Validación
+    if (!name || !last_name || !email || !password) {
       return res.status(400).json({ 
         message: "Todos los campos son requeridos" 
       });
     }
 
-    // Iniciar transacción
     await connection.beginTransaction();
 
-    // 1. Insertar en tabla 'person'
+    // 1. Insertar persona
     const [personResult] = await connection.query(
       "INSERT INTO person (name, last_name, birthdate, gender, weight_value, height_value, activity_level, objective) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        name,
-        last_name,
-        birthdate,
-        gender,
-        weight,
-        height,
-        activity_level,
-        objective,
-      ]
+      [name, last_name, birthdate, gender, weight, height, activity_level, objective]
     );
 
+    const personId = personResult.insertId;
+
+    // 2. Calcular nutrición
     const bmr = calculateBMR({ weight, height, gender, birthdate });
     const calories = bmr * getActivityFactor(activity_level);
     const macros = calculateMacronutrients(calories, objective);
 
-    // 2. Insertar en tabla 'nutritional_requirements'
     await connection.query(
       `INSERT INTO nutritional_requirements 
        (personid, date, daily_calories, protein_grams, fat_grams, carbs_grams)
        VALUES (?, CURDATE(), ?, ?, ?, ?)`,
-      [
-        personResult.insertId,
-        macros.daily_calories,
-        macros.protein_grams,
-        macros.fat_grams,
-        macros.carbs_grams,
-      ]
+      [personId, macros.daily_calories, macros.protein_grams, macros.fat_grams, macros.carbs_grams]
     );
 
-    // 3. Insertar en tabla 'user' - SIN email_verified
+    // 3. Insertar usuario
     const hashedPassword = await bcrypt.hash(password, 10);
-    const [userResult] = await connection.query(
+    await connection.query(
       "INSERT INTO user (personid, email, username, password_hash) VALUES (?, ?, ?, ?)",
-      [personResult.insertId, email, email, hashedPassword]
+      [personId, email, email, hashedPassword]
     );
 
-    // 4. Generar y enviar código 2FA
+    // 4. Generar código
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expirationTime = Date.now() + 15 * 60 * 1000; // 15 minutos
+    const expirationTime = Date.now() + 15 * 60 * 1000;
 
-    // Guardar código 2FA
     twoFACodes.set(email, {
       code: verificationCode,
       expiresAt: expirationTime,
       attempts: 0,
-      userId: userResult.insertId
+      userId: personId
     });
 
-    // 5. Enviar email con código 2FA
-    try {
-      await sendVerificationEmail(email, verificationCode);
-      console.log('✅ Email de verificación enviado a:', email);
-    } catch (emailError) {
-      console.error("❌ Error enviando email 2FA:", emailError);
-    }
-
-    // 6. Generar token TEMPORAL (solo para verificación 2FA)
+    // 5. Token temporal
     const tempToken = jwt.sign(
       { 
-        userId: userResult.insertId,
+        userId: personId,
         email: email,
-        requires2FA: true,
-        temp: true
+        requires2FA: true
       },
       process.env.JWT_SECRET,
       { expiresIn: "15m" }
@@ -125,25 +83,37 @@ export const register = async (req, res) => {
     await connection.commit();
     connection.release();
 
-    // Respuesta indicando que requiere 2FA
+    console.log('✅ Registro completado. Código:', verificationCode);
+
+    // 6. Intentar enviar email EN SEGUNDO PLANO (no bloquea)
+    setTimeout(async () => {
+      try {
+        await sendVerificationEmail(email, verificationCode);
+        console.log('✅ Email enviado exitosamente a:', email);
+      } catch (emailError) {
+        console.error('❌ Error enviando email:', emailError);
+        // No hacemos nada, el usuario ya puede usar el código
+      }
+    }, 0);
+
+    // Respuesta INMEDIATA al frontend
     res.status(201).json({
       status: "requires_2fa",
       message: "Registro exitoso. Se ha enviado un código de verificación a tu email.",
       tempToken: tempToken,
       email: email,
-      requires2FA: true
+      requires2FA: true,
+      debug_code: process.env.NODE_ENV === "development" ? verificationCode : undefined
     });
 
   } catch (error) {
-    // Revertir transacción en caso de error
+    console.error('❌ ERROR en registro:', error);
+    
     if (connection) {
       await connection.rollback();
       connection.release();
     }
 
-    console.error("Error en registro:", error);
-
-    // Manejar errores específicos
     if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ message: "El email ya está registrado" });
     }
@@ -151,11 +121,10 @@ export const register = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Error en el servidor",
-      details: process.env.NODE_ENV === "development" ? error.message : undefined,
+      details: error.message
     });
   }
 };
-
 export const verify2FA = async (req, res) => {
   try {
     const { email, code, tempToken } = req.body;

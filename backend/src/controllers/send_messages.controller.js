@@ -1,57 +1,52 @@
 import axios from "axios";
-import nodemailer from "nodemailer";
-import validator from "validator";
 
-export const send_email = async (req, res) => {
-  const { email, subject, text } = req.body;
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    port: process.env.EMAIL_PORT || 465,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    secure: true,
-    logger: true,
-  });
-  try {
-    if (!email || !validator.isEmail(email)) {
-      return res.status(400).json({
-        status: "error",
-        message: "Email es requerido y debe ser válido",
-      });
-    }
-    if (!subject || !text) {
-      return res.status(400).json({
-        status: "error",
-        message: "Asunto y cuerpo del mensaje son requeridos",
-      });
-    }
+import validator from "validator";
+import nodemailer from 'nodemailer';
+
+export const send_email = async (email, code) => {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Timeout: Email service took too long'));
+    }, 10000); // 10 segundos timeout
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      secure: true,
+    });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: subject,
-      text: text,
+      subject: "Código de verificación - NutriTrack",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #16a34a;">Verificación de cuenta</h2>
+          <p>Tu código de verificación es:</p>
+          <h1 style="font-size: 32px; color: #16a34a; text-align: center; letter-spacing: 5px;">
+            ${code}
+          </h1>
+          <p>Este código expirará en 15 minutos.</p>
+          <p>Si no solicitaste este código, ignora este mensaje.</p>
+        </div>
+      `,
     };
-    const info = await transporter.sendMail(mailOptions);
-    return res.status(200).json({
-      status: "success",
-      message: "Email enviado correctamente",
-      details: process.env.NODE_ENV === "development" ? info : undefined,
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      clearTimeout(timeout);
+      
+      if (error) {
+        console.error('❌ Error enviando email:', error);
+        reject(error);
+      } else {
+        console.log('✅ Email enviado:', info.response);
+        resolve(info);
+      }
     });
-  } catch (error) {
-    console.error("Error creating transporter:", error);
-    return res.status(500).json({
-      status: "error",
-      message: "Error al crear el transportador de correo",
-      details:
-        process.env.NODE_ENV === "desarrollo" ? error.message : undefined,
-    });
-  }
+  });
 };
 
 export const send_whatsapp = async (req, res) => {
