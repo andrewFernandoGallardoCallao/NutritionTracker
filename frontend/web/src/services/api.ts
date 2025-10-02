@@ -1,4 +1,4 @@
-const API_URL = "https://nutritiontracker-frontend.onrender.com/api";
+const API_URL = "https://nutritiontracker-1-c7sh.onrender.com/api";
 
 export const api = {
   async request(endpoint: string, options: RequestInit = {}) {
@@ -52,6 +52,7 @@ export const authService = {
   // Autenticación
   login: (email: string, password: string) =>
     api.post("/auth/login", { email, password }),
+  
   register: (userData: any) => api.post("/auth/register", userData),
 
   verify2FA: (email: string, code: string, tempToken: string) =>

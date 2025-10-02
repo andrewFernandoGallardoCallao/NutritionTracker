@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
       setUser(profileData.user);
 
       // Cargar requisitos nutricionales
-      const nutritionResponse = await fetch(`http://localhost:4000/api/auth/nutritional-requirements/${storedUser.id}`, {
+      const nutritionResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/nutritional-requirements/${storedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
       }
 
       // Cargar historial de peso
-      const weightResponse = await fetch(`http://localhost:4000/api/auth/weight-history/${storedUser.id}`, {
+      const weightResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/weight-history/${storedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
       }
 
       // Cargar consumo de hoy
-      const consumptionResponse = await fetch(`http://localhost:4000/api/auth/today-consumption/${storedUser.id}`, {
+      const consumptionResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/today-consumption/${storedUser.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

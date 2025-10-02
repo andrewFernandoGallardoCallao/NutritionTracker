@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { authService } from "../services/api";
+import { Link } from "react-router-dom"; // ← AÑADE ESTA IMPORTACIÓN
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -118,12 +119,12 @@ const Login: React.FC = () => {
         </div>
         <p className="mt-6 text-center text-green-600">
           ¿No tienes cuenta?{" "}
-          <a
-            href="/register"
+          <Link 
+            to="/register" 
             className="text-green-800 hover:underline font-semibold"
           >
             Regístrate aquí
-          </a>
+          </Link>
         </p>
 
         {/* Enlace de recuperación de contraseña */}
