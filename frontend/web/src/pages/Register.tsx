@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '../services/api';
 import VerificationCode from './VerificationCode';
-
+import { Link } from 'react-router-dom';
 const Register: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -346,9 +346,7 @@ const Register: React.FC = () => {
 
         <p className="mt-6 text-center text-green-600">
           ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="text-green-800 hover:underline font-semibold">
-            Inicia Sesión
-          </a>
+          <Link to="/login">Inicia Sesión</Link>
         </p>
       </div>
     </div>

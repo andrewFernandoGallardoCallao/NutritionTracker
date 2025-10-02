@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { authService } from "../services/api";
-import { Link } from "react-router-dom"; // ← AÑADE ESTA IMPORTACIÓN
+import { Link, useNavigate } from "react-router-dom"; // ← AÑADE useNavigate
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate(); // ← INICIALIZA navigate
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ const Login: React.FC = () => {
       console.log("Login exitoso:", response);
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      window.location.href = "/dashboard";
+      navigate("/dashboard"); // ← CAMBIA ESTA LÍNEA
     } catch (err) {
       setError("Error al iniciar sesión. Verifica tus credenciales.");
     } finally {
@@ -39,11 +40,6 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        {/* Botones de registro social */}
-
-        {/* Separador */}
-
-        {/* Formulario de login tradicional */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
@@ -75,6 +71,7 @@ const Login: React.FC = () => {
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>
+
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-green-200"></div>
@@ -83,11 +80,12 @@ const Login: React.FC = () => {
             <span className="px-2 bg-white text-green-600">O</span>
           </div>
         </div>
+
         <div className="flex flex-col gap-3 mb-6">
           <button
             type="button"
             className="flex items-center justify-center w-full bg-white border border-green-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            onClick={() => (window.location.href = "/auth/google")}
+            onClick={() => console.log("Google login - implementar")} // ← TEMPORAL
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -99,7 +97,7 @@ const Login: React.FC = () => {
           <button
             type="button"
             className="flex items-center justify-center w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            onClick={() => (window.location.href = "/auth/apple")}
+            onClick={() => console.log("Apple login - implementar")} // ← TEMPORAL
           >
             <img
               src="/apple-svgrepo-com.svg"
@@ -109,6 +107,7 @@ const Login: React.FC = () => {
             Continuar con Apple
           </button>
         </div>
+
         <div className="relative mb-6 mt-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-green-200"></div>
@@ -117,6 +116,7 @@ const Login: React.FC = () => {
             <span className="px-2 bg-white text-green-600">O</span>
           </div>
         </div>
+
         <p className="mt-6 text-center text-green-600">
           ¿No tienes cuenta?{" "}
           <Link 
@@ -127,14 +127,14 @@ const Login: React.FC = () => {
           </Link>
         </p>
 
-        {/* Enlace de recuperación de contraseña */}
+        {/* Enlace de recuperación de contraseña - también cambia a Link */}
         <div className="mt-4 text-center">
-          <a
-            href="/forgot-password"
+          <Link
+            to="/forgot-password"
             className="text-green-700 hover:text-green-800 text-sm"
           >
             ¿Olvidaste tu contraseña?
-          </a>
+          </Link>
         </div>
       </div>
     </div>
