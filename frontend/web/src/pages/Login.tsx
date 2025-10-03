@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { authService } from "../services/api";
 import { Link, useNavigate } from "react-router-dom"; // ← AÑADE useNavigate
-
+import { useAuth } from "../context/authContext"; // ← IMPORTA useAuth
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // ← INICIALIZA navigate
+  const navigate = useNavigate();
+  const { login } = useAuth(); // ← Usa el contexto
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,16 +18,19 @@ const Login: React.FC = () => {
     try {
       const response = await authService.login(email, password);
       console.log("Login exitoso:", response);
+
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      navigate("/dashboard"); // ← CAMBIA ESTA LÍNEA
+
+      login(response.token); // ← Actualiza el estado global
+
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError("Error al iniciar sesión. Verifica tus credenciales.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-green-100">
@@ -119,8 +123,8 @@ const Login: React.FC = () => {
 
         <p className="mt-6 text-center text-green-600">
           ¿No tienes cuenta?{" "}
-          <Link 
-            to="/register" 
+          <Link
+            to="/register"
             className="text-green-800 hover:underline font-semibold"
           >
             Regístrate aquí
