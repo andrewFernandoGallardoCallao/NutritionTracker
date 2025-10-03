@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 interface UserData {
   id: number;
   name: string;
@@ -36,17 +35,18 @@ interface TodayConsumption {
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
-  const [nutritionalRequirements, setNutritionalRequirements] = useState<NutritionalRequirements | null>(null);
+  const [nutritionalRequirements, setNutritionalRequirements] =
+    useState<NutritionalRequirements | null>(null);
   const [weightHistory, setWeightHistory] = useState<WeightHistory[]>([]);
   const [todayConsumption, setTodayConsumption] = useState<TodayConsumption>({
     calories: 0,
     protein: 0,
     fat: 0,
-    carbs: 0
+    carbs: 0,
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadDashboardData();
@@ -54,66 +54,77 @@ const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      
+      const token = localStorage.getItem("token");
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
       if (!storedUser.id) {
-        throw new Error('No se encontró información del usuario');
+        throw new Error("No se encontró información del usuario");
       }
 
       // Cargar perfil completo
-      const profileResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/profile/${storedUser.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const profileResponse = await fetch(
+        `https://nutritiontracker-1-c7sh.onrender.com/api/auth/profile/${storedUser.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       if (!profileResponse.ok) {
-        throw new Error('Error cargando perfil');
+        throw new Error("Error cargando perfil");
       }
-      
+
       const profileData = await profileResponse.json();
       setUser(profileData.user);
 
       // Cargar requisitos nutricionales
-      const nutritionResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/nutritional-requirements/${storedUser.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const nutritionResponse = await fetch(
+        `https://nutritiontracker-1-c7sh.onrender.com/api/auth/nutritional-requirements/${storedUser.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       if (nutritionResponse.ok) {
         const nutritionData = await nutritionResponse.json();
         setNutritionalRequirements(nutritionData.requirements);
       }
 
       // Cargar historial de peso
-      const weightResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/weight-history/${storedUser.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const weightResponse = await fetch(
+        `https://nutritiontracker-1-c7sh.onrender.com/api/auth/weight-history/${storedUser.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       if (weightResponse.ok) {
         const weightData = await weightResponse.json();
         setWeightHistory(weightData.weightHistory);
       }
 
       // Cargar consumo de hoy
-      const consumptionResponse = await fetch(`https://nutritiontracker-1-c7sh.onrender.com/api/auth/today-consumption/${storedUser.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const consumptionResponse = await fetch(
+        `https://nutritiontracker-1-c7sh.onrender.com/api/auth/today-consumption/${storedUser.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       if (consumptionResponse.ok) {
         const consumptionData = await consumptionResponse.json();
         setTodayConsumption(consumptionData.consumption);
       }
-
     } catch (err: any) {
-      console.error('Error cargando datos del dashboard:', err);
-      setError(err.message || 'Error cargando datos');
+      console.error("Error cargando datos del dashboard:", err);
+      setError(err.message || "Error cargando datos");
     } finally {
       setLoading(false);
     }
@@ -125,11 +136,14 @@ const Dashboard: React.FC = () => {
       const birthDate = new Date(birthdate);
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
         age--;
       }
-      
+
       return age;
     } catch (error) {
       return 0;
@@ -141,33 +155,33 @@ const Dashboard: React.FC = () => {
       const heightInMeters = height / 100;
       return (weight / (heightInMeters * heightInMeters)).toFixed(1);
     } catch (error) {
-      return '0.0';
+      return "0.0";
     }
   };
 
   const getBMICategory = (bmi: number) => {
-    if (isNaN(bmi)) return 'No calculable';
-    if (bmi < 18.5) return 'Bajo peso';
-    if (bmi < 25) return 'Peso normal';
-    if (bmi < 30) return 'Sobrepeso';
-    return 'Obesidad';
+    if (isNaN(bmi)) return "No calculable";
+    if (bmi < 18.5) return "Bajo peso";
+    if (bmi < 25) return "Peso normal";
+    if (bmi < 30) return "Sobrepeso";
+    return "Obesidad";
   };
 
   const getActivityLevelText = (level: number) => {
     const levels: { [key: number]: string } = {
-      1: 'Sedentario',
-      2: 'Ligero', 
-      3: 'Moderado',
-      4: 'Activo',
-      5: 'Muy activo'
+      1: "Sedentario",
+      2: "Ligero",
+      3: "Moderado",
+      4: "Activo",
+      5: "Muy activo",
     };
-    return levels[level] || 'No especificado';
+    return levels[level] || "No especificado";
   };
 
   const getObjectiveText = (objective: string) => {
     const objectives: { [key: string]: string } = {
-      'lose_weight': 'Perder peso',
-      'maintain_path_muscle': 'Mantener peso / Ganar músculo'
+      lose_weight: "Perder peso",
+      maintain_path_muscle: "Mantener peso / Ganar músculo",
     };
     return objectives[objective] || objective;
   };
@@ -178,9 +192,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login"); // ✅ Usa navigate en lugar de window.location
   };
 
   if (loading) {
@@ -198,8 +212,10 @@ const Dashboard: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Error cargando datos del usuario'}</p>
-          <button 
+          <p className="text-red-600 mb-4">
+            {error || "Error cargando datos del usuario"}
+          </p>
+          <button
             onClick={handleLogout}
             className="bg-green-800 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-medium"
           >
@@ -233,17 +249,21 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </header>
-      
+
       <main className="max-w-7xl mx-auto py-8 px-4">
         {/* Resumen Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Información del Usuario */}
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">👤 Tu Perfil</h2>
+            <h2 className="text-xl font-bold text-green-900 mb-4">
+              👤 Tu Perfil
+            </h2>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Nombre:</span>
-                <span className="font-semibold">{user.name} {user.last_name}</span>
+                <span className="font-semibold">
+                  {user.name} {user.last_name}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Edad:</span>
@@ -252,23 +272,33 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Género:</span>
                 <span className="font-semibold">
-                  {user.gender === 'M' ? 'Hombre' : user.gender === 'F' ? 'Mujer' : 'Otro'}
+                  {user.gender === "M"
+                    ? "Hombre"
+                    : user.gender === "F"
+                    ? "Mujer"
+                    : "Otro"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Actividad:</span>
-                <span className="font-semibold">{getActivityLevelText(user.activity_level)}</span>
+                <span className="font-semibold">
+                  {getActivityLevelText(user.activity_level)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Objetivo:</span>
-                <span className="font-semibold">{getObjectiveText(user.objective)}</span>
+                <span className="font-semibold">
+                  {getObjectiveText(user.objective)}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Medidas Corporales */}
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">📏 Medidas Corporales</h2>
+            <h2 className="text-xl font-bold text-green-900 mb-4">
+              📏 Medidas Corporales
+            </h2>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Peso actual:</span>
@@ -280,7 +310,9 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">IMC:</span>
-                <span className="font-semibold">{bmi} ({bmiCategory})</span>
+                <span className="font-semibold">
+                  {bmi} ({bmiCategory})
+                </span>
               </div>
               {weightHistory.length > 0 && (
                 <div className="flex justify-between">
@@ -295,35 +327,49 @@ const Dashboard: React.FC = () => {
 
           {/* Objetivos Diarios */}
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-            <h2 className="text-xl font-bold text-green-900 mb-4">🎯 Objetivos Diarios</h2>
+            <h2 className="text-xl font-bold text-green-900 mb-4">
+              🎯 Objetivos Diarios
+            </h2>
             {nutritionalRequirements ? (
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600">Calorías</span>
                     <span className="font-semibold">
-                      {Math.round(todayConsumption.calories)} / {nutritionalRequirements.daily_calories} kcal
+                      {Math.round(todayConsumption.calories)} /{" "}
+                      {nutritionalRequirements.daily_calories} kcal
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-green-600 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.calories, nutritionalRequirements.daily_calories)}%` }}
+                      style={{
+                        width: `${calculateProgress(
+                          todayConsumption.calories,
+                          nutritionalRequirements.daily_calories
+                        )}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600">Proteína</span>
                     <span className="font-semibold">
-                      {Math.round(todayConsumption.protein)} / {nutritionalRequirements.protein_grams} g
+                      {Math.round(todayConsumption.protein)} /{" "}
+                      {nutritionalRequirements.protein_grams} g
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.protein, nutritionalRequirements.protein_grams)}%` }}
+                      style={{
+                        width: `${calculateProgress(
+                          todayConsumption.protein,
+                          nutritionalRequirements.protein_grams
+                        )}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -332,13 +378,19 @@ const Dashboard: React.FC = () => {
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600">Grasas</span>
                     <span className="font-semibold">
-                      {Math.round(todayConsumption.fat)} / {nutritionalRequirements.fat_grams} g
+                      {Math.round(todayConsumption.fat)} /{" "}
+                      {nutritionalRequirements.fat_grams} g
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-yellow-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.fat, nutritionalRequirements.fat_grams)}%` }}
+                      style={{
+                        width: `${calculateProgress(
+                          todayConsumption.fat,
+                          nutritionalRequirements.fat_grams
+                        )}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -347,45 +399,32 @@ const Dashboard: React.FC = () => {
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600">Carbohidratos</span>
                     <span className="font-semibold">
-                      {Math.round(todayConsumption.carbs)} / {nutritionalRequirements.carbs_grams} g
+                      {Math.round(todayConsumption.carbs)} /{" "}
+                      {nutritionalRequirements.carbs_grams} g
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-orange-500 h-2 rounded-full transition-all"
-                      style={{ width: `${calculateProgress(todayConsumption.carbs, nutritionalRequirements.carbs_grams)}%` }}
+                      style={{
+                        width: `${calculateProgress(
+                          todayConsumption.carbs,
+                          nutritionalRequirements.carbs_grams
+                        )}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500">No se encontraron objetivos nutricionales</p>
+              <p className="text-gray-500">
+                No se encontraron objetivos nutricionales
+              </p>
             )}
           </div>
         </div>
 
-        {/* Sección adicional para mostrar que las variables se están usando */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-100">
-          <h2 className="text-xl font-bold text-green-900 mb-4">📊 Resumen de Datos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <p className="text-gray-600">Requisitos Cargados</p>
-              <p className="font-semibold">{nutritionalRequirements ? '✅' : '❌'}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Registros de Peso</p>
-              <p className="font-semibold">{weightHistory.length}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Calorías Hoy</p>
-              <p className="font-semibold">{Math.round(todayConsumption.calories)} kcal</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Proteína Hoy</p>
-              <p className="font-semibold">{Math.round(todayConsumption.protein)}g</p>
-            </div>
-          </div>
-        </div>
+        {/* Resto del código del dashboard... */}
       </main>
     </div>
   );
